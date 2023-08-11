@@ -9,6 +9,11 @@ var compression = require('compression');
 //  Include Routes
 var auth = require('./route/authRoute');
 var alumni = require('./route/alumniRoute');
+var corsOptions = {
+  origin: 'http://localhost:8080',
+  optionsSuccessStatus: 200 // For legacy browser support
+}
+
 app.set('view engine','ejs');
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
@@ -20,14 +25,14 @@ app.use(fileUpload());
 app.use(helmet());
 
 // Token Initializations
-app.use(function(req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "x-access-token, Origin, Content-Type, Accept"
-  );
-  next();
-});
+// app.use(function(req, res, next) {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "x-access-token, Origin, Content-Type, Accept"
+//   );
+//   next();
+// });
 
 // Initialise App Routes
 app.use('/api',auth); 
