@@ -1,26 +1,28 @@
 var mysql = require('mysql');
 var util = require('util');
 
+// var pool = mysql.createPool({
+//     multipleStatements: true,
+//     connectionLimit : 1000,
+//     host : 'localhost',
+//     port : 3306,
+//     user: 'root',
+//     password : 'DHRCdodowa1',
+//     database : 'hr',
+// });
+
+
 var pool = mysql.createPool({
-    multipleStatements: true,
-    connectionLimit : 1000,
-    host : 'localhost',
-    port : 3306,
-    user: 'root',
-    password : 'DHRCdodowa1',
-    database : 'hr',
+    multipleStatements: false,
+    connectionLimit : 200,
+    host : process.env.MYSQL_HOST,
+    port : process.env.MYSQL_PORT,
+    user: process.env.MYSQL_USER,
+    password : process.env.MYSQL_PASS,
+    database : process.env.MYSQL_DB,
 });
 
 
-// var pool = mysql.createPool({
-//     multipleStatements: false,
-//     connectionLimit : 1000,
-//     host : process.env.MYSQL_HOST,
-//     port : process.env.MYSQL_PORT,
-//     user: process.env.MYSQL_USER,
-//     password : process.env.MYSQL_PASS,
-//     database : process.env.MYSQL_DB,
-// });
 
 pool.getConnection((err,conn) => {
     if (err) {
