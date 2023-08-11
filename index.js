@@ -25,14 +25,14 @@ app.use(fileUpload());
 app.use(helmet());
 
 // // Token Initializations
-// app.use(function(req, res, next) {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "x-access-token, Origin, Content-Type, Accept"
-//   );
-//   next();
-// });
+app.use(function(req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "x-access-token, Origin, Content-Type, Accept"
+  );
+  next();
+});
 
 // Initialise App Routes
 app.use('/api',auth); 

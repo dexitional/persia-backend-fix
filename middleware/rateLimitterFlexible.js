@@ -30,6 +30,10 @@ const voteLimiter = (req,res,next) => {
       res.setHeader('X-RateLimit-Limit', 1);
       res.setHeader('X-RateLimit-Remaining', rateLimiterRes.remainingPoints);
       res.setHeader('X-RateLimit-Reset', new Date(Date.now() + rateLimiterRes.msBeforeNext).toISOString());
+      // CORS (optional)
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+     
       next();
     })
     .catch(async () => {
