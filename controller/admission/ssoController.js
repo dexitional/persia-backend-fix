@@ -46,7 +46,7 @@ module.exports = {
         };
         // Generate Session Token
         const token = jwt.sign(data, "miguelblayackah", {
-          expiresIn: 60 * 60,
+          expiresIn: 8 * 60 * 60,
         });
         //data.token = token;
         const lgs = await SSO.logger(user[0].uid, "LOGIN_SUCCESS", {
@@ -102,7 +102,7 @@ module.exports = {
           };
           // Generate Session Token
           const token = jwt.sign(data, "miguelblayackah", {
-            expiresIn: 60 * 60,
+            expiresIn: 8 * 60 * 60,
           });
           //data.token = token;
           // Log Activity
