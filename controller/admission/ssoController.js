@@ -593,6 +593,7 @@ module.exports = {
       const bio = await SSO.fetchUserByVerb(tag); // Biodata
       if (bio) {
         var pic = await SSO.fetchPhoto(tag, bio.gid); // Photo
+        res.setHeader("Access-Control-Allow-Origin", "*");
         if (pic) {
           res.status(200).sendFile(pic);
         } else {
