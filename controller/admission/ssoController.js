@@ -41,19 +41,18 @@ module.exports = {
         var data = {
           roles: [...roles, ...evsRoles ],
           photo,
-          user: userdata && userdata[0],
+          //user: userdata && userdata[0],
+          user: { tag: userdata[0].tag, mail: userdata[0].mail, name: userdata[0].name, descriptor: userdata[0].designation, department: userdata[0].unitname, user_group: userdata[0].user_group },
         };
         // Generate Session Token
-        console.log(data);
-        const token = jwt.sign({ data: user }, "miguelblayackah", {
+        const token = jwt.sign(data, "miguelblayackah", {
           expiresIn: 60 * 60,
         });
-        data.token = token;
-
+        //data.token = token;
         const lgs = await SSO.logger(user[0].uid, "LOGIN_SUCCESS", {
           username,
         }); // Log Activity
-        res.status(200).json({ success: true, data });
+        res.status(200).json({ success: true, data: token });
       } else {
         const lgs = await SSO.logger(0, "LOGIN_FAILED", { username }); // Log Activity
         res.status(200).json({
@@ -98,16 +97,17 @@ module.exports = {
           var data = {
             roles: [...roles, ...evsRoles ],
             photo,
-            user: userdata && userdata[0],
+            //user: userdata && userdata[0],
+            user: { tag: userdata[0].tag, mail: userdata[0].mail, name: userdata[0].name, descriptor: userdata[0].designation, department: userdata[0].unitname, user_group: userdata[0].user_group },
           };
           // Generate Session Token
-          const token = jwt.sign({ data: user }, "miguelblayackah", {
+          const token = jwt.sign(data, "miguelblayackah", {
             expiresIn: 60 * 60,
           });
-          data.token = token;
+          //data.token = token;
           // Log Activity
           const lgs = await SSO.logger(uid, "LOGIN_SUCCESS", { email }); // Log Activity
-          res.status(200).json({ success: true, data });
+          res.status(200).json({ success: true, data: token });
         } else {
           // SSO USER NOT STAGED
           const ups = await SSO.insertSSOUser({
@@ -1309,9 +1309,9 @@ module.exports = {
   },
 
   postEvsData: async (req, res) => {
-    console.log(req.ip);
+    const tag = req.userId;
     try {
-      var resp = await SSO.postEvsData(req.body);
+      var resp = await SSO.postEvsData(req.body,tag);
       res.status(200).json(resp);
     } catch (e) {
       console.log(e);
@@ -1570,36 +1570,6 @@ module.exports = {
     }
   },
 
-  postEvsData: async (req, res) => {
-    try {
-      var resp = await SSO.postEvsData(req.body);
-      res.status(200).json(resp);
-    } catch (e) {
-      console.log(e);
-      res
-        .status(200)
-        .json({ success: false, data: null, msg: "Something wrong happened!" });
-    }
-  },
-
-  fetchEvsMonitor: async (req, res) => {
-    try {
-      const { id } = req.params;
-      var resp = await SSO.fetchEvsMonitor(id);
-      if (resp) {
-        res.status(200).json({ success: true, data: resp });
-      } else {
-        res
-          .status(200)
-          .json({ success: false, data: null, msg: "Action failed!" });
-      }
-    } catch (e) {
-      console.log(e);
-      res
-        .status(200)
-        .json({ success: false, data: null, msg: "Something wrong !" });
-    }
-  },
 
   // HELPERS
 

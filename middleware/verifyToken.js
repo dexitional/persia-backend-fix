@@ -19,11 +19,12 @@ const verifyToken = (req, res, next) => {
                msg: "Unauthorized!",
             });
         }
-            console.log("decoded token: ", decoded)
+            //console.log("decoded token: ", decoded?.user?.tag)
             req.userId = decoded?.user?.tag;
             next();
         });
   };
+
 
   module.exports = {
     verifyToken

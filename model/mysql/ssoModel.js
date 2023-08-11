@@ -83,7 +83,6 @@ module.exports.SSO = {
   fetchEvsRoles: async (tag) => {
     var roles = [];
     // Electoral Roles
-    //var sql = "select e.*,v.vote_time,v.vote_status,v.vote_sum,JSON_SEARCH(e.voters_whitelist, 'all', "+tag+") as voter,find_in_set('"+tag+"',e.ec_admins) as ec,find_in_set('"+tag+"',e.ec_agents) as agent from ehub_vote.election e left join ehub_vote.elector v on (e.id = v.election_id and v.tag = '"+tag+"') where ((json_search(e.voters_whitelist, 'one', "+tag+") is not null or find_in_set('"+tag+"',ec_admins) > 0 or find_in_set('"+tag+"',ec_agents) > 0)) and e.live_status = 1";
     var sql =
       "select e.*,v.vote_time,v.vote_status,v.vote_sum,JSON_SEARCH(e.voters_whitelist, 'all', ?) as voter,find_in_set(?,e.ec_admins) as ec,find_in_set(?,e.ec_agents) as agent from ehub_vote.election e left join ehub_vote.elector v on (e.id = v.election_id and v.tag = ?) where ((json_search(e.voters_whitelist, 'one', ?) is not null or find_in_set(?,ec_admins) > 0 or find_in_set(?,ec_agents) > 0)) and e.live_status = 1";
 
@@ -98,8 +97,10 @@ module.exports.SSO = {
             app_name: "Electa Voting System",
             app_desc: "Electa Voting System for the University",
             app_tag: "evs",
-            ...r,
-            data: res,
+            //...r,
+            ...({id: r.id, logo:r.logo, group_id: r.group_id, name:r.name, tag:r.tag, allow_monitor:r.allow_monitor, allow_monitor_ec:r.allow_monitor_ec, allow_vip:r.allow_vip, allow_vip_ec:r.allow_vip_ec, allow_result:r.allow_result, allow_result_ec:r.allow_result_ec, vote_status:r.vote_status, vote_time:r.vote_time, voter:r.voter, ec:r.ec, on_test:r.on_test, start:r.start, end:r.end, voters_count:r.voters_count, status:r.status }),
+            eid: r.id,
+            //data: res,
           });
         else if (r.agent)
           roles.push({
@@ -109,8 +110,10 @@ module.exports.SSO = {
             app_name: "Electa Voting System",
             app_desc: "Electa Voting System for the University",
             app_tag: "evs",
-            ...r,
-            data: res,
+            ...({id: r.id, logo:r.logo, group_id: r.group_id, name:r.name, tag:r.tag, allow_monitor:r.allow_monitor, allow_monitor_ec:r.allow_monitor_ec, allow_vip:r.allow_vip, allow_vip_ec:r.allow_vip_ec, allow_result:r.allow_result, allow_result_ec:r.allow_result_ec, vote_status:r.vote_status, vote_time:r.vote_time, voter:r.voter, ec:r.ec, on_test:r.on_test, start:r.start, end:r.end, voters_count:r.voters_count, status:r.status }),
+            //...r,
+            //data: res,
+            eid: r.id,
           });
         else if (r.voter)
           roles.push({
@@ -120,8 +123,10 @@ module.exports.SSO = {
             app_name: "Electa Voting System",
             app_desc: "Electa Voting System for the University",
             app_tag: "evs",
-            ...r,
-            data: res,
+            ...({id: r.id, logo:r.logo, group_id: r.group_id, name:r.name, tag:r.tag, allow_monitor:r.allow_monitor, allow_monitor_ec:r.allow_monitor_ec, allow_vip:r.allow_vip, allow_vip_ec:r.allow_vip_ec, allow_result:r.allow_result, allow_result_ec:r.allow_result_ec, vote_status:r.vote_status, vote_time:r.vote_time, voter:r.voter, ec:r.ec, on_test:r.on_test, start:r.start, end:r.end, voters_count:r.voters_count, status:r.status }),
+            //...r,
+            //data: res,
+            eid: r.id,
           });
       }
     } else {
@@ -132,19 +137,73 @@ module.exports.SSO = {
         app_name: "Electa Voting System",
         app_desc: "Electa Voting System for the University",
         app_tag: "evs",
-        ...r,
-        data: [],
+        //...r,
+        // data: [],
+        eid: 0,
       });
     }
-    /*
-      const mx = md.map( r => `${r}`)
-      fs.writeFile('utag.json',JSON.stringify(mx), function (err) {
-         if (err) throw err;
-         console.log('File is created successfully.');
-      });
-      */
-    return roles;
+   return roles;
   },
+
+ 
+  // fetchEvsRoles: async (tag) => {
+  //   var roles = [];
+  //   // Electoral Roles
+  //   var sql =
+  //     "select e.*,v.vote_time,v.vote_status,v.vote_sum,JSON_SEARCH(e.voters_whitelist, 'all', ?) as voter,find_in_set(?,e.ec_admins) as ec,find_in_set(?,e.ec_agents) as agent from ehub_vote.election e left join ehub_vote.elector v on (e.id = v.election_id and v.tag = ?) where ((json_search(e.voters_whitelist, 'one', ?) is not null or find_in_set(?,ec_admins) > 0 or find_in_set(?,ec_agents) > 0)) and e.live_status = 1";
+
+  //   var res = await db.query(sql, [tag, tag, tag, tag, tag, tag, tag]);
+  //   if (res && res.length > 0) {
+  //     for (var r of res) {
+  //       if (r.ec)
+  //         roles.push({
+  //           role_id: 9,
+  //           role_name: "ELECTORAL ADMIN",
+  //           role_desc: "Electa Administrator",
+  //           app_name: "Electa Voting System",
+  //           app_desc: "Electa Voting System for the University",
+  //           app_tag: "evs",
+  //           ...r,
+  //           data: res,
+  //         });
+  //       else if (r.agent)
+  //         roles.push({
+  //           role_id: 10,
+  //           role_name: "ELECTORAL AGENT",
+  //           role_desc: "Electa Agent",
+  //           app_name: "Electa Voting System",
+  //           app_desc: "Electa Voting System for the University",
+  //           app_tag: "evs",
+  //           ...r,
+  //           data: res,
+  //         });
+  //       else if (r.voter)
+  //         roles.push({
+  //           role_id: 11,
+  //           role_name: "ELECTORAL VOTER",
+  //           role_desc: "Electa Voter",
+  //           app_name: "Electa Voting System",
+  //           app_desc: "Electa Voting System for the University",
+  //           app_tag: "evs",
+  //           ...r,
+  //           data: res,
+  //         });
+  //     }
+  //   } else {
+  //     roles.push({
+  //       role_id: 11,
+  //       role_name: "ELECTORAL VOTER",
+  //       role_desc: "Electa Voter",
+  //       app_name: "Electa Voting System",
+  //       app_desc: "Electa Voting System for the University",
+  //       app_tag: "evs",
+  //       ...r,
+  //       data: [],
+  //     });
+  //   }
+  //  return roles;
+  // },
+
 
   fetchRoles: async (uid) => {
     const sql =
@@ -152,6 +211,7 @@ module.exports.SSO = {
     const res = await db.query(sql, [uid]);
     return res;
   },
+  
 
   /*
    fetchPhoto : async (uid) => {
@@ -838,8 +898,8 @@ module.exports.SSO = {
     return { ...(res && res[0]), electors };
   },
 
-  postEvsData: async (data) => {
-    const { id, tag, votes, hash } = data;
+  postEvsData: async (data,tag) => {
+    const { id, votes, hash } = data;
     
     // START TRANSACTION
     //await db.query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
@@ -853,15 +913,19 @@ module.exports.SSO = {
          const vt_index = parseInt(voter.replaceAll('"','').replaceAll('[','').replaceAll(']','').replaceAll('$',''))
          const vt_user = JSON.parse(voters_whitedata)[vt_index];
          const check_hash = crypto.SHA256(`${tag}${id}${vt_user['name']}`).toString()
-
+         
          // Check for Intrusion or attack
-         if(hash != check_hash)  throw new Error(`Elector intrusion detected`);
+         //if(hash != check_hash)  throw new Error(`Elector intrusion detected`);
+
 
          // Get Portfolio count & Verify whether equal to data posted
           var res = await db.query("select * from ehub_vote.portfolio where status = 1 and election_id = " +id);
+         
+      
           if (res && res.length > 0 && live_status > 0 && tag == vt_user['tag'] && (status == 'STARTED' || (status == 'ENDED'))) { // && parseInt(moment().diff(moment(end),'seconds')) <= 120
             
             const count = res.length;
+           
             // var vt = await db.query(
             //   "select * from ehub_vote.elector where election_id = " +
             //     id +
@@ -869,8 +933,12 @@ module.exports.SSO = {
             //     tag +
             //     "' and vote_status = 1"
             // );
-            if (!vote_status) {
+            if (!vote_status) {    
+              console.log(count,votes, Object.values(votes) ,Object.values(votes).length)
               if (count == Object.values(votes).length) {
+                console.log(vt_user,live_status,count,vote_status)
+              
+  
                 // Update Candidate Votes Count
                 const vals = Object.values(votes);
                 var update_count = 0;
@@ -937,6 +1005,7 @@ module.exports.SSO = {
 
      
     } catch (e) {
+      console.log(e)
       //db.rollback();
       //console.info('Rollback successful');
       return {
