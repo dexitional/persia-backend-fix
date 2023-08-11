@@ -929,13 +929,12 @@ module.exports.SSO = {
               election_id: id,
               ip,
               location,
-              meta: JSON.stringify(req.body)
+              meta: JSON.stringify(data)
             };
             const intd_ins = await db.query(
               "insert into ehub_vote.attack set ?",
               intd
             );
-
             throw new Error(`Elector intrusion detected`);
          }
 
@@ -1032,6 +1031,12 @@ module.exports.SSO = {
         msg: e?.message || "Please re-submit again",
       };
     }
+  },
+
+  logAttack: async (data) => {
+    const sql = "insert into ehub_vote.attack set ?";
+    const res = await db.query(sql, data);
+    return res;
   },
 
   updateEvsControl: async (id, data) => {

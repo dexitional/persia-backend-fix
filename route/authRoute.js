@@ -9,7 +9,8 @@ const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwzyx", 8);
 /* Controllers */
 var ApplicantController = require("../controller/admission/applicantController");
 var SSOController = require("../controller/admission/ssoController");
-const { voteLimiter } = require("../middleware/rateLimitter");
+//const { voteLimiter } = require("../middleware/rateLimitter");
+const { voteLimiter } = require("../middleware/rateLimitterFlexible");
 const { verifyToken } = require("../middleware/verifyToken");
 
 /* SSO User Photo */
