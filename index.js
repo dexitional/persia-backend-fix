@@ -10,7 +10,7 @@ var compression = require('compression');
 var auth = require('./route/authRoute');
 var alumni = require('./route/alumniRoute');
 var corsOptions = {
-  origin: 'http://localhost:8080',
+  origin: 'https://localhost:8080',
   optionsSuccessStatus: 200 // For legacy browser support
 }
 
@@ -24,7 +24,7 @@ app.use(fileUpload());
 // Security Guards
 app.use(helmet());
 
-// Token Initializations
+// // Token Initializations
 // app.use(function(req, res, next) {
 //   res.setHeader("Access-Control-Allow-Origin", "*");
 //   res.header(
