@@ -27,6 +27,8 @@ app.use(helmet());
 // // Token Initializations
 app.use(function(req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
   res.header(
     "Access-Control-Allow-Headers",
     "x-access-token, Origin, Content-Type, Accept"
