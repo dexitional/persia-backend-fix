@@ -899,30 +899,50 @@ module.exports.SSO = {
   },
 
   postEvsData: async (data,tag) => {
-    const { id, votes, hash } = data;
+    const { id, votes, hash, ip, location } = data;
     
+    if(!tag)  throw new Error(`Request user not found`);
+    if(!id)  throw new Error(`Request ID not found`);
+
     // START TRANSACTION
     //await db.query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
     //await db.beginTransaction();
     try {
       // Get Election Data
       var resp = await db.query("select v.tag,e.id as eid,e.tag,e.voters_count,e.voters_whitedata,e.live_status,e.end,e.status,v.vote_time,v.vote_status,v.vote_sum,JSON_SEARCH(e.voters_whitelist, 'one', '"+tag+"') as voter from ehub_vote.election e left join ehub_vote.elector v on (e.id = v.election_id and v.tag = '"+tag+"') where json_search(e.voters_whitelist, 'one', '"+tag+"') is not null and e.live_status = 1 and e.id = "+id);
+      
       if (resp && resp.length > 0){
+         
          const { vote_status, status, live_status,end, voters_whitedata, voter } = resp[0];
          
          const vt_index = parseInt(voter.replaceAll('"','').replaceAll('[','').replaceAll(']','').replaceAll('$',''))
-         const vt_user = JSON.parse(voters_whitedata)[vt_index];
+         const vt_user = voters_whitedata && JSON.parse(voters_whitedata)[vt_index];
          const check_hash = crypto.SHA256(`${tag}${id}${vt_user['name']}`).toString()
          
          // Check for Intrusion or attack
-         //if(hash != check_hash)  throw new Error(`Elector intrusion detected`);
+         if(hash != check_hash) {
+            
+            // Log Intrusion 
+            const intd = {
+              period: new Date(),
+              tag: vt_user.tag,
+              election_id: id,
+              ip,
+              location,
+              meta: JSON.stringify(req.body)
+            };
+            const intd_ins = await db.query(
+              "insert into ehub_vote.attack set ?",
+              intd
+            );
 
+            throw new Error(`Elector intrusion detected`);
+         }
 
          // Get Portfolio count & Verify whether equal to data posted
           var res = await db.query("select * from ehub_vote.portfolio where status = 1 and election_id = " +id);
          
-      
-          if (res && res.length > 0 && live_status > 0 && tag == vt_user['tag'] && (status == 'STARTED' || (status == 'ENDED'))) { // && parseInt(moment().diff(moment(end),'seconds')) <= 120
+          if (res && res.length > 0 && live_status > 0 && tag == vt_user['tag'] && (status == 'STARTED' || (status == 'ENDED' && parseInt(moment().diff(moment(end),'seconds')) <= 120))) { // && parseInt(moment().diff(moment(end),'seconds')) <= 120
             
             const count = res.length;
            
@@ -934,11 +954,8 @@ module.exports.SSO = {
             //     "' and vote_status = 1"
             // );
             if (!vote_status) {    
-              console.log(count,votes, Object.values(votes) ,Object.values(votes).length)
-              if (count == Object.values(votes).length) {
-                console.log(vt_user,live_status,count,vote_status)
               
-  
+              if (count == Object.values(votes).length) {
                 // Update Candidate Votes Count
                 const vals = Object.values(votes);
                 var update_count = 0;
@@ -969,6 +986,8 @@ module.exports.SSO = {
                   name: vt_user.name,
                   tag: vt_user.tag,
                   election_id: id,
+                  ip,
+                  location
                 };
                 const ins = await db.query(
                   "insert into ehub_vote.elector set ?",
@@ -993,13 +1012,13 @@ module.exports.SSO = {
               //return { success: false, msg: 'Elector already voted', code: 1004 }
             }
           } else {
-            throw new Error(`vote submission disallowed`);
+            throw new Error(`Vote submission disallowed`);
             //return { success: false, msg: 'Portfolio not found', code: 1005 }
           }
 
 
       } else {
-        throw new Error(`Elector intrusion detected`);
+        throw new Error(`Request not completed`);
       }
 
 
