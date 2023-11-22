@@ -318,33 +318,25 @@ module.exports.SSO = {
     var sql;
     switch (gid) {
       case "01": // Student
-        sql =
-          "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.inst_email as mail,s.regno as tag,s.cellphone as phone,'01' as gid,g.group_name,p.short_name as program_name,d.short_name as unitname from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join osis.students_db s on u.tag = s.regno left join osis.prog_db p on s.progid = p.progid left join osis.departments d on d.deptid = p.deptid where x.default = 1 and u.uid = " +
-          uid;
+        sql ="select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.inst_email as mail,s.regno as tag,s.cellphone as phone,'01' as gid,g.group_name,p.short_name as program_name,d.short_name as unitname from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join osis.students_db s on u.tag = s.regno left join osis.prog_db p on s.progid = p.progid left join osis.departments d on d.deptid = p.deptid where x.default = 1 and u.uid = ?";
         break;
       case "02": // Staff
-        sql =
-          "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.staff_no as tag,u.uid,g.group_name from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join hr.staff s on u.tag = s.staff_no left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where u.uid = " +
-          uid;
+        sql = "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.staff_no as tag,u.uid,g.group_name from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join hr.staff s on u.tag = s.staff_no left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where u.uid = ?";
         break;
       case "03": // NSS
-        sql = "select from ehub_identity.photo p where p.uid = " + uid;
+        sql = "select from ehub_identity.photo p where p.uid = ?";
         break;
       case "04": // Applicant (Job)
-        sql = "select from ehub_identity.photo p where p.uid = " + uid;
+        sql = "select from ehub_identity.photo p where p.uid = ?";
         break;
       case "05": // Alumni
-        sql =
-          "select *, p.refno as tag from ehub_alumni.member p where p.refno = " +
-          uid;
+        sql = "select *, p.refno as tag from ehub_alumni.member p where p.refno = ?";
         break;
       default: // Staff
-        sql =
-          "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,u.uid,g.group_name from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join hr.staff s on u.tag = s.staff_no left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where u.uid = " +
-          uid;
+        sql = "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,u.uid,g.group_name from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join hr.staff s on u.tag = s.staff_no left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where u.uid = ?";
         break;
     }
-    const res = await db.query(sql);
+    const res = await db.query(sql,[uid]);
     return res;
   },
 
@@ -352,33 +344,19 @@ module.exports.SSO = {
     keyword = keyword == null || keyword == "null" ? "" : keyword.trim();
     var sql, res;
     // Student
-    sql =
-      "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.inst_email as mail,s.regno as tag,s.cellphone as phone,'01' as gid,'STUDENT' as group_name,p.short_name as descriptor,d.short_name as unitname from osis.students_db s left join osis.prog_db p on s.progid = p.progid  left join osis.departments d on d.deptid = p.deptid where s.regno = '" +
-      keyword +
-      "' or s.inst_email = '" +
-      keyword +
-      "'";
-    const res1 = await db.query(sql);
+    sql = "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.inst_email as mail,s.regno as tag,s.cellphone as phone,'01' as gid,'STUDENT' as group_name,p.short_name as descriptor,d.short_name as unitname from osis.students_db s left join osis.prog_db p on s.progid = p.progid  left join osis.departments d on d.deptid = p.deptid where s.regno = ? or s.inst_email = ?";
+    const res1 = await db.query(sql,[keyword,keyword]);
     if (res1 && res1.length > 0) res = res1[0];
 
     // Staff
-    sql =
-      "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.ucc_mail as mail,s.staff_no as tag,'02' as gid,'STAFF' as group_name,j.title as descriptor,x.long_name as unitname from hr.staff s left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where (s.ucc_mail = '" +
-      keyword +
-      "' or trim(s.staff_no) = '" +
-      keyword +
-      "') and s.ucc_mail is not null";
-    const res2 = await db.query(sql);
+    sql = "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.ucc_mail as mail,s.staff_no as tag,'02' as gid,'STAFF' as group_name,j.title as descriptor,x.long_name as unitname from hr.staff s left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where (s.ucc_mail = ? or trim(s.staff_no) = ?) and s.ucc_mail is not null";
+    const res2 = await db.query(sql,[keyword,keyword]);
     if (res2 && res2.length > 0) res = res2[0];
 
     // NSS
     sql =
-      "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.mobile as phone,'03' as gid,'NSS' as group_name from hr.nss s left join hr.unit x on s.unit_id = x.id where s.nss_no = '" +
-      keyword +
-      "' or s.email = '" +
-      keyword +
-      "'";
-    const res3 = await db.query(sql);
+      "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.mobile as phone,'03' as gid,'NSS' as group_name from hr.nss s left join hr.unit x on s.unit_id = x.id where s.nss_no = ? or s.email = ?";
+    const res3 = await db.query(sql,[keyword,keyword]);
     if (res3 && res3.length > 0) res = res3[0];
 
     // Applicant (Job)
@@ -387,11 +365,8 @@ module.exports.SSO = {
     //if(res4 && res4.length > 0) res = res4[0]
 
     // Alumni
-    sql =
-      "select *,'05' as gid,'ALUMNI' as group_name from ehub_alumni.member where refno = '" +
-      keyword +
-      "'";
-    const res5 = await db.query(sql);
+    sql = "select *,'05' as gid,'ALUMNI' as group_name from ehub_alumni.member where refno = ?";
+    const res5 = await db.query(sql,[keyword]);
     if (res5 && res5.length > 0) res = res5[0];
 
     return res;
@@ -401,33 +376,18 @@ module.exports.SSO = {
     keyword = keyword == null || keyword == "null" ? "" : keyword.trim();
     var sql, res;
     // Student
-    sql =
-      "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.inst_email as mail,s.regno as tag,s.cellphone as phone,'01' as gid,'STUDENT' as group_name,p.short_name as descriptor,d.short_name as unitname from osis.students_db s left join osis.prog_db p on s.progid = p.progid  left join osis.departments d on d.deptid = p.deptid where s.regno = '" +
-      keyword +
-      "' or s.inst_email = '" +
-      keyword +
-      "'";
-    const res1 = await db.query(sql);
+    sql = "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.inst_email as mail,s.regno as tag,s.cellphone as phone,'01' as gid,'STUDENT' as group_name,p.short_name as descriptor,d.short_name as unitname from osis.students_db s left join osis.prog_db p on s.progid = p.progid  left join osis.departments d on d.deptid = p.deptid where s.regno = ? or s.inst_email = ?";
+    const res1 = await db.query(sql,[keyword,keyword]);
     if (res1 && res1.length > 0) res = res1;
 
     // Staff
-    sql =
-      "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.ucc_mail as mail,s.staff_no as tag,'02' as gid,'STAFF' as group_name,j.title as descriptor,x.long_name as unitname from hr.staff s left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where (s.ucc_mail = '" +
-      keyword +
-      "' or trim(s.staff_no) = '" +
-      keyword +
-      "') and s.ucc_mail is not null";
-    const res2 = await db.query(sql);
+    sql = "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.ucc_mail as mail,s.staff_no as tag,'02' as gid,'STAFF' as group_name,j.title as descriptor,x.long_name as unitname from hr.staff s left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where (s.ucc_mail = ? or trim(s.staff_no) = ?) and s.ucc_mail is not null";
+    const res2 = await db.query(sql,[keyword,keyword]);
     if (res2 && res2.length > 0) res = res2;
 
     // NSS
-    sql =
-      "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.mobile as phone,'03' as gid,'NSS' as group_name from hr.nss s left join hr.unit x on s.unit_id = x.id where s.nss_no = '" +
-      keyword +
-      "' or s.email = '" +
-      keyword +
-      "'";
-    const res3 = await db.query(sql);
+    sql = "select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.mobile as phone,'03' as gid,'NSS' as group_name from hr.nss s left join hr.unit x on s.unit_id = x.id where s.nss_no = ? or s.email = ?";
+    const res3 = await db.query(sql,[keyword,keyword]);
     if (res3 && res3.length > 0) res = res3;
 
     // Applicant (Job)
@@ -436,11 +396,8 @@ module.exports.SSO = {
     //if(res4 && res4.length > 0) res = res4[0]
 
     // Alumni
-    sql =
-      "select *,'05' as gid,'ALUMNI' as group_name from ehub_alumni.member where refno = '" +
-      keyword +
-      "'";
-    const res5 = await db.query(sql);
+    sql = "select *,'05' as gid,'ALUMNI' as group_name from ehub_alumni.member where refno = ?";
+    const res5 = await db.query(sql,[keyword]);
     if (res5 && res5.length > 0) res = res5;
 
     return res;
@@ -448,15 +405,9 @@ module.exports.SSO = {
 
   fetchUserByPhone: async (phone) => {
     // Student
-    const res1 = await db.query(
-      "select s.*,p.short as program_name,m.title as major_name,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name, x.title as session_name,x.academic_year as session_year,x.academic_sem as session_semester,x.id as session_id,x.cal_register_start,x.cal_register_end,u.username,u.uid,u.group_id,u.group_id as gid from ehub_identity.user u left join ais.student s on u.tag = s.refno left join ehub_utility.program p on s.prog_id = p.id left join ais.major m on s.major_id = m.id left join ehub_utility.session x on x.mode_id = p.mode_id where x.default = 1 and s.phone = " +
-        phone
-    );
+    const res1 = await db.query("select s.*,p.short as program_name,m.title as major_name,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name, x.title as session_name,x.academic_year as session_year,x.academic_sem as session_semester,x.id as session_id,x.cal_register_start,x.cal_register_end,u.username,u.uid,u.group_id,u.group_id as gid from ehub_identity.user u left join ais.student s on u.tag = s.refno left join ehub_utility.program p on s.prog_id = p.id left join ais.major m on s.major_id = m.id left join ehub_utility.session x on x.mode_id = p.mode_id where x.default = 1 and s.phone = ?",[phone]);
     // Staff
-    const res2 = await db.query(
-      "select s.*,j.title as designation,x.title as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,u.username,u.uid,u.group_id,u.group_id as gid from ehub_identity.user u left join ehub_hrs.staff s on u.tag = s.staff_no left join ehub_hrs.job j on j.id = s.job_id left join ehub_utility.unit x on s.unit_id = x.id where s.phone = " +
-        phone
-    );
+    const res2 = await db.query("select s.*,j.title as designation,x.title as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,u.username,u.uid,u.group_id,u.group_id as gid from ehub_identity.user u left join ehub_hrs.staff s on u.tag = s.staff_no left join ehub_hrs.job j on j.id = s.job_id left join ehub_utility.unit x on s.unit_id = x.id where s.phone = ?",[phone]);
     // NSS
     // Applicant (Job)
     // Alumni
@@ -465,9 +416,8 @@ module.exports.SSO = {
   },
 
   updateUserByEmail: async (email, data) => {
-    const sql =
-      "update ehub_identity.user set ? where username = '" + email + "'";
-    const res = await db.query(sql, data);
+    const sql = "update ehub_identity.user set ? where username = ?";
+    const res = await db.query(sql, [data,email]);
     return res;
   },
 
@@ -484,21 +434,14 @@ module.exports.SSO = {
   },
 
   deleteSSORole: async (uid, role) => {
-    const sql =
-      "delete from ehub_identity.user_role where uid = " +
-      uid +
-      " and arole_id = " +
-      role;
-    const res = await db.query(sql);
+    const sql = "delete from ehub_identity.user_role where uid = ? and arole_id = ?";
+    const res = await db.query(sql,[uid,role]);
     return res;
   },
 
   logger: async (uid, action, meta) => {
     const data = { uid, title: action, meta: JSON.stringify(meta) };
-    const res = await db.query(
-      "insert into ehub_identity.`activity` set ?",
-      data
-    );
+    const res = await db.query("insert into ehub_identity.`activity` set ?", data);
     return res;
   },
 
