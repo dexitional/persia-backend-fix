@@ -595,15 +595,19 @@ module.exports = {
         var pic = await SSO.fetchPhoto(tag, bio.gid); // Photo
         res.setHeader("Access-Control-Allow-Origin", "*");
         if (pic) {
+          res.setHeader("X-exists",1);
           res.status(200).sendFile(pic);
         } else {
+          res.setHeader("X-exists",0);
           res.status(200).sendFile(path.join(__dirname, "/../../public/cdn", "none.png"));
         }
       } else {
+        res.setHeader("X-exists",0);
         res.status(200).sendFile(path.join(__dirname, "/../../public/cdn", "none.png"));
       }
     } catch (err) {
       console.log(err);
+      res.setHeader("X-exists",0);
       res.status(200).sendFile(path.join(__dirname, "/../../public/cdn", "none.png"));
     }
   },
