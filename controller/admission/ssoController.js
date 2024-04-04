@@ -53,6 +53,7 @@ module.exports = {
           username,
         }); // Log Activity
         res.status(200).json({ success: true, data: token });
+      
       } else {
         const lgs = await SSO.logger(0, "LOGIN_FAILED", { username }); // Log Activity
         res.status(200).json({

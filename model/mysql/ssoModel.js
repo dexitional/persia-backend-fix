@@ -12,6 +12,7 @@ module.exports.SSO = {
     var queries = [
       "select u.* from ehub_identity.user u where u.username = ? and password = sha1(?)", // SSO Users
       "select 0 as uid,1 as group_name,1 as group_id,s.regno as tag,concat(s.fname,' ',ifnull(concat(s.mname,' '),''),s.lname) as name,s.fname,s.mname,s.lname, s.level,(s.level/100) as year,s.progid as program,s.hallid as hall,s.inst_email as mail from osisextra.useraccount u left join osis.students_db s on u.regno = s.regno where u.regno = ? and u.password = md5(?)", // UCC Proprietory Student Users
+      "select 0 as uid,6 as group_name,6 as group_id,tag,name,phone as mail from ehub_vote.vote_auth where username = ? and unicode_pwd = ?", // Affiliated UCC Voters - PTAs
     ];
 
     var res;
@@ -332,10 +333,15 @@ module.exports.SSO = {
       case "05": // Alumni
         sql = "select *, p.refno as tag from ehub_alumni.member p where p.refno = ?";
         break;
+      case "06": // Voter
+        sql = "select 0 as uid,'VOTER' as group_name,6 as gid,tag,name,phone as mail,phone from ehub_vote.vote_auth where tag = ?";
+        break;
       default: // Staff
         sql = "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,u.uid,g.group_name from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join hr.staff s on u.tag = s.staff_no left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where u.uid = ?";
         break;
     }
+    //  "select 0 as uid,6 as group_name,6 as group_id,tag,name,phone as mail from ehub_vote.vote_auth where username = ? and unicode_pwd = ?", // Affiliated UCC Voters - PTAs
+    
     const res = await db.query(sql,[uid]);
     return res;
   },
@@ -369,6 +375,11 @@ module.exports.SSO = {
     const res5 = await db.query(sql,[keyword]);
     if (res5 && res5.length > 0) res = res5[0];
 
+    // Aux Voter
+    sql = "select 'VOTER' as group_name,6 as gid,tag,name,phone as mail,phone,'Voter' as descriptor from ehub_vote.vote_auth where tag = ? or phone = ?";
+    const res6 = await db.query(sql,[keyword,keyword]);
+    if (res6 && res6.length > 0) res = res6[0];
+
     return res;
   },
 
@@ -400,6 +411,12 @@ module.exports.SSO = {
     const res5 = await db.query(sql,[keyword]);
     if (res5 && res5.length > 0) res = res5;
 
+    // Voter
+    sql = "select 'VOTER' as group_name,6 as gid,tag,name,phone as mail,phone,'Voter' as descriptor from ehub_vote.vote_auth where tag = ? or phone = ?";
+    const res6 = await db.query(sql,[keyword,keyword]);
+    if (res6 && res6.length > 0) res = res6;
+ 
+
     return res;
   },
 
@@ -408,11 +425,15 @@ module.exports.SSO = {
     const res1 = await db.query("select s.*,p.short as program_name,m.title as major_name,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name, x.title as session_name,x.academic_year as session_year,x.academic_sem as session_semester,x.id as session_id,x.cal_register_start,x.cal_register_end,u.username,u.uid,u.group_id,u.group_id as gid from ehub_identity.user u left join ais.student s on u.tag = s.refno left join ehub_utility.program p on s.prog_id = p.id left join ais.major m on s.major_id = m.id left join ehub_utility.session x on x.mode_id = p.mode_id where x.default = 1 and s.phone = ?",[phone]);
     // Staff
     const res2 = await db.query("select s.*,j.title as designation,x.title as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,u.username,u.uid,u.group_id,u.group_id as gid from ehub_identity.user u left join ehub_hrs.staff s on u.tag = s.staff_no left join ehub_hrs.job j on j.id = s.job_id left join ehub_utility.unit x on s.unit_id = x.id where s.phone = ?",[phone]);
+    // Voter
+    const res6 = await db.query("select 'VOTER' as group_name,6 as gid,tag,name,phone as mail,phone,'Voter' as descriptor from ehub_vote.vote_auth where phone = ?",[phone]);
+    
     // NSS
     // Applicant (Job)
     // Alumni
     if (res1 && res1.length > 0) return res1;
     if (res2 && res2.length > 0) return res2;
+    if (res6 && res6.length > 0) return res6;
   },
 
   updateUserByEmail: async (email, data) => {
@@ -717,7 +738,7 @@ module.exports.SSO = {
     if (res && res.length > 0) data.candidates = res;
     // Election data
     var res = await db.query(
-      "select e.*,v.vote_status,vote_time,vote_sum from ehub_vote.election e left join ehub_vote.elector v on e.id = v.election_id where e.id = " +
+      "select e.*,v.vote_status,vote_time,vote_sum,allow_vmask from ehub_vote.election e left join ehub_vote.elector v on e.id = v.election_id where e.id = " +
         id +
         " and v.tag = '" +
         tag +
@@ -817,7 +838,10 @@ module.exports.SSO = {
             sql = `select s.staff_no as tag,concat(s.fname,ifnull(concat(' ',s.mname),''),' ',s.lname) as name,s.ucc_mail as mail from hr.staff s where s.staff_no = ?`;
           if (group_id === 1)
             sql = `select s.regno as tag,concat(s.fname,ifnull(concat(' ',s.mname),''),' ',s.lname) as name,s.inst_email as mail from osis.students_db s where s.regno = ?`;
-          const ss = await db.query(sql, [tag]);
+          if (group_id === 6)
+            sql = `select tag,name,phone as mail,phone from ehub_vote.vote_auth where tag = ?`;
+          
+            const ss = await db.query(sql, [tag]);
           if (ss && ss.length > 0) electors.push(ss[0]);
         }
         // Update Voters_whitedata
