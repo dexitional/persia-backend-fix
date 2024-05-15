@@ -74,7 +74,7 @@ Router.delete("/evs/deletecandidate/:id",[ verifyToken], SSOController.removeCan
 Router.post("/evs/savecandidate",[verifyToken], SSOController.saveCandidate);
 
 /* SSO - IDENTITY ROUTES */
-Router.get("/sso/identity", [verifyToken], SSOController.fetchSSOIdentity);
+Router.get("/sso/identity", SSOController.fetchSSOIdentity);
 Router.post("/sso/identity", [verifyToken], SSOController.postEvsData);
 // Router.post("/sso/bulkphoto", SSOController.fetchEvsMonitor);
 
