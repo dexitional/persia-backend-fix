@@ -319,7 +319,7 @@ module.exports.SSO = {
     var sql;
     switch (gid) {
       case "01": // Student
-        sql ="select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.inst_email as mail,s.regno as tag,s.cellphone as phone,'01' as gid,g.group_name,p.short_name as program_name,d.short_name as unitname from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join osis.students_db s on u.tag = s.regno left join osis.prog_db p on s.progid = p.progid left join osis.departments d on d.deptid = p.deptid where x.default = 1 and u.uid = ?";
+        sql ="select s.*,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.inst_email as mail,s.regno as tag,s.cellphone as phone,'01' as gid,g.group_name,p.short_name as program_name,d.short_name as unitname from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join osis.students_db s on u.tag = s.regno left join osis.prog_db p on s.progid = p.progid left join osis.departments d on d.deptid = p.deptid where u.uid = ?";
         break;
       case "02": // Staff
         sql = "select s.*,j.title as designation,x.long_name as unitname,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name,s.staff_no as tag,u.uid,g.group_name from ehub_identity.user u left join ehub_identity.group g on u.group_id = g.group_id left join hr.staff s on u.tag = s.staff_no left join hr.promotion p on s.promo_id = p.id left join hr.job j on j.id = p.job_id left join hr.unit x on p.unit_id = x.id where u.uid = ?";
