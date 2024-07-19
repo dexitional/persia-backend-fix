@@ -1007,16 +1007,14 @@ module.exports.SSO = {
   },
 
   updateEvsControl: async (id, data) => {
-    const sql = "update ehub_vote.election set ? where id = " + id;
-    const res = await db.query(sql, data);
+    const sql = "update ehub_vote.election set ? where id = ?";
+    const res = await db.query(sql, [ data, id ]);
     return res;
   },
 
   removeVoter: async (id, tg) => {
     // Voters data
-    var res = await db.query(
-      "select * from ehub_vote.election where id = " + id
-    );
+    var res = await db.query("select * from ehub_vote.election where id = ?",id);
     if (res && res.length > 0) {
       var voters =
         (res[0].voters_whitelist && JSON.parse(res[0].voters_whitelist)) || [];
@@ -1052,9 +1050,7 @@ module.exports.SSO = {
 
   addVoter: async (id, tg) => {
     // Voters data
-    var res = await db.query(
-      "select * from ehub_vote.election where id = " + id
-    );
+    var res = await db.query("select * from ehub_vote.election where id = ?",id);
     if (res && res.length > 0) {
       var voters =
         (res[0].voters_whitelist && JSON.parse(res[0].voters_whitelist)) || [];
@@ -1094,8 +1090,7 @@ module.exports.SSO = {
 
   removePortfolio: async (id) => {
     var res = await db.query(
-      "delete from ehub_vote.portfolio where id = " + id
-    );
+      "delete from ehub_vote.portfolio where id = ?",id);
     return res;
   },
 
@@ -1105,17 +1100,12 @@ module.exports.SSO = {
   },
 
   updatePortfolio: async (id, data) => {
-    var res = await db.query(
-      "update ehub_vote.portfolio set ? where id = " + id,
-      data
-    );
+    var res = await db.query("update ehub_vote.portfolio set ? where id = ?",[data,id]);
     return res;
   },
 
   removeCandidate: async (id) => {
-    var res = await db.query(
-      "delete from ehub_vote.candidate where id = " + id
-    );
+    var res = await db.query("delete from ehub_vote.candidate where id = ?",id);
     return res;
   },
 
@@ -1125,10 +1115,7 @@ module.exports.SSO = {
   },
 
   updateCandidate: async (id, data) => {
-    var res = await db.query(
-      "update ehub_vote.candidate set ? where id = " + id,
-      data
-    );
+    var res = await db.query("update ehub_vote.candidate set ? where id = ?",[data,id]);
     return res;
   },
 
