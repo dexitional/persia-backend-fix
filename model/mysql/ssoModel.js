@@ -593,33 +593,23 @@ module.exports.SSO = {
   },
 
   getNewStaffNo: async () => {
-    const res = await db.query(
-      "select staff_no+1 as staff_no from ehub_hrs.staff where staff_no not in ('15666','16000') order by staff_no desc limit 1"
-    );
+    const res = await db.query("select staff_no+1 as staff_no from ehub_hrs.staff where staff_no not in ('15666','16000') order by staff_no desc limit 1");
     if (res && res.length > 0) return res[0].staff_no;
     return 1000;
   },
 
   fetchStaffProfile: async (staff_no) => {
-    const res = await db.query(
-      "select s.*,x.long_name as unit_name,m.title as designation,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name from ehub_hrs.staff s left join ehub_identity.user u on u.tag = s.staff_no left join ehub_utility.unit x on s.unit_id = x.id left join ehub_hrs.job m on s.job_id = m.id  where s.staff_no = " +
-        staff_no
-    );
+    const res = await db.query("select s.*,x.long_name as unit_name,m.title as designation,concat(s.fname,' ',ifnull(concat(mname,' '),''),s.lname) as name from ehub_hrs.staff s left join ehub_identity.user u on u.tag = s.staff_no left join ehub_utility.unit x on s.unit_id = x.id left join ehub_hrs.job m on s.job_id = m.id  where s.staff_no = ?",[staff_no]);
     return res;
   },
 
   updateStaffProfile: async (staff_no, data) => {
-    const res = await db.query(
-      "update ehub_hrs.staff s set ? where s.staff_no = " + staff_no,
-      data
-    );
+    const res = await db.query("update ehub_hrs.staff s set ? where s.staff_no = ?",[data,staff_no]);
     return res;
   },
 
   findEmail: async (email) => {
-    const res = await db.query(
-      "select * from ehub_hrs.staff where inst_mail = '" + email + "'"
-    );
+    const res = await db.query("select * from ehub_hrs.staff where inst_mail = ?",[email]);
     return res;
   },
 
@@ -654,20 +644,18 @@ module.exports.SSO = {
     };
   },
   insertHRUnit: async (data) => {
-    const res = await db.query("insert into ehub_utility.unit set ?", data);
+    const res = await db.query("insert into ehub_utility.unit set ?", [data]);
     return res;
   },
 
   updateHRUnit: async (id, data) => {
     const res = await db.query(
-      "update ehub_utility.unit set ? where id = " + id,
-      data
-    );
+      "update ehub_utility.unit set ? where id = ?",[data,id]);
     return res;
   },
 
   deleteHRUnit: async (id) => {
-    var res = await db.query("delete from ehub_utility.unit where id = " + id);
+    var res = await db.query("delete from ehub_utility.unit where id = ?",[id]);
     return res;
   },
 
@@ -708,15 +696,12 @@ module.exports.SSO = {
   },
 
   updateHRJob: async (id, data) => {
-    const res = await db.query(
-      "update ehub_hrs.job set ? where id = " + id,
-      data
-    );
+    const res = await db.query("update ehub_hrs.job set ? where id = ?",[data,id]);
     return res;
   },
 
   deleteHRJob: async (id) => {
-    var res = await db.query("delete from ehub_hrs.job where id = " + id);
+    var res = await db.query("delete from ehub_hrs.job where id = ?",[id]);
     return res;
   },
 
@@ -725,30 +710,16 @@ module.exports.SSO = {
   fetchEvsData: async (id, tag) => {
     var data = {};
     // Portfolio data
-    var res = await db.query(
-      "select * from ehub_vote.portfolio where status = 1 and election_id = " +
-        id
-    );
+    var res = await db.query("select * from ehub_vote.portfolio where status = 1 and election_id = ?",[id]);
     if (res && res.length > 0) data.portfolios = res;
     // Candidate data
-    var res = await db.query(
-      "select c.*,p.name as portfolio,p.id as pid from ehub_vote.candidate c left join ehub_vote.portfolio p on c.portfolio_id = p.id where c.status = 1 and p.election_id = " +
-        id
-    );
+    var res = await db.query("select c.*,p.name as portfolio,p.id as pid from ehub_vote.candidate c left join ehub_vote.portfolio p on c.portfolio_id = p.id where c.status = 1 and p.election_id = ?",[id]);
     if (res && res.length > 0) data.candidates = res;
     // Election data
-    var res = await db.query(
-      "select e.*,v.vote_status,vote_time,vote_sum,allow_vmask from ehub_vote.election e left join ehub_vote.elector v on e.id = v.election_id where e.id = " +
-        id +
-        " and v.tag = '" +
-        tag +
-        "'"
-    );
+    var res = await db.query("select e.*,v.vote_status,vote_time,vote_sum,allow_vmask from ehub_vote.election e left join ehub_vote.elector v on e.id = v.election_id where e.id = ? and v.tag = ?",[id,tag]);
     if (res && res.length > 0) data.election = res;
     // Voters data
-    var res = await db.query(
-      "select * from ehub_vote.elector where election_id = " + id
-    );
+    var res = await db.query("select * from ehub_vote.elector where election_id = ?",[id]);
     if (res && res.length > 0) data.electors = res;
 
     return data;
@@ -757,26 +728,16 @@ module.exports.SSO = {
   fetchEvsMonitor: async (id) => {
     var data = {};
     // Portfolio data
-    var res = await db.query(
-      "select * from ehub_vote.portfolio where status = 1 and election_id = " +
-        id
-    );
+    var res = await db.query("select * from ehub_vote.portfolio where status = 1 and election_id = ?",[id]);
     if (res && res.length > 0) data.portfolios = res;
     // Candidate data
-    var res = await db.query(
-      "select c.*,p.name as portfolio from ehub_vote.candidate c left join ehub_vote.portfolio p on c.portfolio_id = p.id where c.status = 1 and p.election_id = " +
-        id
-    );
+    var res = await db.query("select c.*,p.name as portfolio from ehub_vote.candidate c left join ehub_vote.portfolio p on c.portfolio_id = p.id where c.status = 1 and p.election_id = ?",[id]);
     if (res && res.length > 0) data.candidates = res;
     // Election data
-    var res = await db.query(
-      "select * from ehub_vote.election where id = " + id
-    );
+    var res = await db.query("select * from ehub_vote.election where id = ?",[id]);
     if (res && res.length > 0) data.election = res;
     // Voters data
-    var res = await db.query(
-      "select * from ehub_vote.elector where election_id = " + id
-    );
+    var res = await db.query("select * from ehub_vote.elector where election_id = ?",[id]);
     if (res && res.length > 0) data.electors = res;
 
     return data;
@@ -786,27 +747,14 @@ module.exports.SSO = {
     // Voters data
     let data = {},
       selections = [];
-    var res = await db.query(
-      "select * from ehub_vote.elector where election_id = " + id
-    );
+    var res = await db.query("select * from ehub_vote.elector where election_id = ?",[id]);
     if (res && res.length > 0) data.electors = res;
-    var res = await db.query(
-      "select * from ehub_vote.elector where election_id = " +
-        id +
-        " and tag = '" +
-        tag +
-        "'"
-    );
+    var res = await db.query("select * from ehub_vote.elector where election_id = ? and tag = ?",[id,tag]);
     if (res && res.length > 0) {
       const candidates = res[0].vote_sum && res[0].vote_sum.split(",");
       if (candidates) {
         for (const candid of candidates) {
-          var cs = await db.query(
-            "select c.*,p.name as portfolio from ehub_vote.candidate c left join ehub_vote.portfolio p on c.portfolio_id = p.id where p.election_id = " +
-              id +
-              " and c.id = " +
-              candid
-          );
+          var cs = await db.query("select c.*,p.name as portfolio from ehub_vote.candidate c left join ehub_vote.portfolio p on c.portfolio_id = p.id where p.election_id = ? and c.id = ?",[id,candid]);
           if (cs && cs.length > 0) selections.push(cs[0]);
         }
       }
@@ -818,12 +766,8 @@ module.exports.SSO = {
     // Voters data
     let data = {},
       electors = [];
-    var vs = await db.query(
-      "select * from ehub_vote.elector where election_id = " + id
-    );
-    var res = await db.query(
-      "select * from ehub_vote.election where id = " + id
-    );
+    var vs = await db.query("select * from ehub_vote.elector where election_id = ?",[id]);
+    var res = await db.query("select * from ehub_vote.election where id = ?",[id]);
     if (res && res.length > 0) {
       const voters =
         (res[0].voters_whitelist && JSON.parse(res[0].voters_whitelist)) || [];
@@ -899,10 +843,7 @@ module.exports.SSO = {
               location,
               meta: JSON.stringify(data)
             };
-            const intd_ins = await db.query(
-              "insert into ehub_vote.attack set ?",
-              intd
-            );
+            const intd_ins = await db.query("insert into ehub_vote.attack set ?",[intd]);
             throw new Error(`Elector intrusion detected`);
          }
 
@@ -1017,13 +958,11 @@ module.exports.SSO = {
         (res[0].voters_whitedata && JSON.parse(res[0].voters_whitedata)) || [];
       const { group_id } = res[0];
       const voter = voters.find((r) => r == tg);
-      console.log("Voter boy: ", voter);
       if (voter) {
         voters = voters.filter((r) => r != tg);
         electors = electors.filter(
           (r) => r.tag.toLowerCase() != tg.toLowerCase()
         );
-        console.log(electors);
         // Update Voters_whitedata
         await db.query(
           "update ehub_vote.election set voters_whitelist = ?, voters_whitedata = ?, voters_count = ? where id = ?",
