@@ -676,9 +676,9 @@ module.exports = {
           : `./public/cdn/photo/evs/${election_id}/${id}.jpg`;
       const query =
         id == "logo"
-          ? `update ehub_vote.election set logo = '${photo}'"`
-          : `update ehub_vote.candidate set photo = '${photo}'"`;
-      const result = await db.query(query);
+          ? `update ehub_vote.election set logo = ?`
+          : `update ehub_vote.candidate set photo = ?`;
+      const result = await db.query(query,[photo]);
       res.status(200).json({ success: true, data: result });
     });
   },
