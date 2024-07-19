@@ -876,7 +876,8 @@ module.exports.SSO = {
     //await db.beginTransaction();
     try {
       // Get Election Data
-      var resp = await db.query("select v.tag,e.id as eid,e.tag,e.voters_count,e.voters_whitedata,e.live_status,e.end,e.status,v.vote_time,v.vote_status,v.vote_sum,JSON_SEARCH(e.voters_whitelist, 'one', '"+tag+"') as voter from ehub_vote.election e left join ehub_vote.elector v on (e.id = v.election_id and v.tag = '"+tag+"') where json_search(e.voters_whitelist, 'one', '"+tag+"') is not null and e.live_status = 1 and e.id = "+id);
+      // var resp = await db.query("select v.tag,e.id as eid,e.tag,e.voters_count,e.voters_whitedata,e.live_status,e.end,e.status,v.vote_time,v.vote_status,v.vote_sum,JSON_SEARCH(e.voters_whitelist, 'one', '"+tag+"') as voter from ehub_vote.election e left join ehub_vote.elector v on (e.id = v.election_id and v.tag = '"+tag+"') where json_search(e.voters_whitelist, 'one', '"+tag+"') is not null and e.live_status = 1 and e.id = "+id);
+      var resp = await db.query("select v.tag,e.id as eid,e.tag,e.voters_count,e.voters_whitedata,e.live_status,e.end,e.status,v.vote_time,v.vote_status,v.vote_sum,JSON_SEARCH(e.voters_whitelist, 'one', ?) as voter from ehub_vote.election e left join ehub_vote.elector v on (e.id = v.election_id and v.tag = ?) where json_search(e.voters_whitelist, 'one', ?) is not null and e.live_status = 1 and e.id = ?",[tag,tag,tag,id]);
       
       if (resp && resp.length > 0){
          
@@ -906,7 +907,7 @@ module.exports.SSO = {
          }
 
          // Get Portfolio count & Verify whether equal to data posted
-          var res = await db.query("select * from ehub_vote.portfolio where status = 1 and election_id = " +id);
+          var res = await db.query("select * from ehub_vote.portfolio where status = 1 and election_id = ?",[id]);
          
           if (res && res.length > 0 && live_status > 0 && tag == vt_user['tag'] && (status == 'STARTED' || (status == 'ENDED' && parseInt(moment().diff(moment(end),'seconds')) <= 120))) { // && parseInt(moment().diff(moment(end),'seconds')) <= 120
             
@@ -928,13 +929,10 @@ module.exports.SSO = {
                 if (vals.length > 0) {
                   for (var val of vals) {
                     const cs = await db.query(
-                      "select * from ehub_vote.candidate where id = " + val
-                    );
+                      "select * from ehub_vote.candidate where id = ?",[val]);
                     if (cs && cs.length > 0) {
                       const ups = await db.query(
-                        "update ehub_vote.candidate set votes = (votes+1) where id = " +
-                          val
-                      );
+                        "update ehub_vote.candidate set votes = (votes+1) where id = ?",[val]);
                       if (ups.affectedRows > 0) update_count += 1;
                     }
                   }
@@ -955,10 +953,7 @@ module.exports.SSO = {
                   ip,
                   location
                 };
-                const ins = await db.query(
-                  "insert into ehub_vote.elector set ?",
-                  dm
-                );
+                const ins = await db.query("insert into ehub_vote.elector set ?",[dm]);
 
                 if (ins && ins.insertId > 0) {
                   //await db.commit();
@@ -1002,7 +997,7 @@ module.exports.SSO = {
 
   logAttack: async (data) => {
     const sql = "insert into ehub_vote.attack set ?";
-    const res = await db.query(sql, data);
+    const res = await db.query(sql, [data]);
     return res;
   },
 
@@ -1014,7 +1009,7 @@ module.exports.SSO = {
 
   removeVoter: async (id, tg) => {
     // Voters data
-    var res = await db.query("select * from ehub_vote.election where id = ?",id);
+    var res = await db.query("select * from ehub_vote.election where id = ?",[id]);
     if (res && res.length > 0) {
       var voters =
         (res[0].voters_whitelist && JSON.parse(res[0].voters_whitelist)) || [];
@@ -1050,7 +1045,7 @@ module.exports.SSO = {
 
   addVoter: async (id, tg) => {
     // Voters data
-    var res = await db.query("select * from ehub_vote.election where id = ?",id);
+    var res = await db.query("select * from ehub_vote.election where id = ?",[id]);
     if (res && res.length > 0) {
       var voters =
         (res[0].voters_whitelist && JSON.parse(res[0].voters_whitelist)) || [];
@@ -1090,12 +1085,12 @@ module.exports.SSO = {
 
   removePortfolio: async (id) => {
     var res = await db.query(
-      "delete from ehub_vote.portfolio where id = ?",id);
+      "delete from ehub_vote.portfolio where id = ?",[id]);
     return res;
   },
 
   insertPortfolio: async (data) => {
-    var res = await db.query("insert into ehub_vote.portfolio set ?", data);
+    var res = await db.query("insert into ehub_vote.portfolio set ?", [data]);
     return res;
   },
 
@@ -1105,12 +1100,12 @@ module.exports.SSO = {
   },
 
   removeCandidate: async (id) => {
-    var res = await db.query("delete from ehub_vote.candidate where id = ?",id);
+    var res = await db.query("delete from ehub_vote.candidate where id = ?",[id]);
     return res;
   },
 
   insertCandidate: async (data) => {
-    var res = await db.query("insert into ehub_vote.candidate set ?", data);
+    var res = await db.query("insert into ehub_vote.candidate set ?", [data]);
     return res;
   },
 
