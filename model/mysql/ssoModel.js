@@ -508,10 +508,7 @@ module.exports.SSO = {
   },
 
   updateAISStudent: async (id, data) => {
-    const res = await db.query(
-      "update ais.student set ? where id = " + id,
-      data
-    );
+    const res = await db.query("update ais.student set ? where id = ?",[ data,id ]);
     return res;
   },
 

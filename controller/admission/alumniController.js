@@ -82,7 +82,7 @@ module.exports = {
   deleteAlumni : async (req,res) => {
     try{
         const { id } = req.params;
-        var resp = await SSO.deleteAlumni(id);
+        var resp = await ALU.deleteAlumni(id);
         if(resp){
             res.status(200).json({success:true, data:resp});
         }else{
