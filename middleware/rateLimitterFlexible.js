@@ -50,18 +50,12 @@ const voteLimiter = (req,res,next) => {
             meta: "RATE ATTACK"
           })
       })
-      
       res.status(429).json({ message: 'Too Many Requests !' });
     });
 };
 
-
  
 module.exports = {
-    voteLimiter
+  voteLimiter
 }
  
-
-// EH/BSS/19/0234 - adongo
-// EH/ACT/20/0075 - abanga
-

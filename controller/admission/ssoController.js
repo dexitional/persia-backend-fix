@@ -80,25 +80,26 @@ module.exports = {
     try {
       var user = await SSO.fetchUserByVerb(email);
       if (user) {
-        const isUser = await SSO.fetchSSOUser(user.tag);
+        const isUser = user?.gid == 6 ? await SSO.verifyAux(user?.tag) : await SSO.fetchSSOUser(user?.tag);
+        //console.log("PASSED:", user,isUser)
         if (isUser && isUser.length > 0) {
           // SSO USER EXISTS
           const uid = isUser[0].uid;
-          var roles = await SSO.fetchRoles(uid); // Roles
-          const photo = `${req.protocol}://${req.get(
-            "host"
-          )}/api/photos/?tag=${encodeURIComponent(
-            user.tag.toString().toLowerCase()
-          )}`;
-          var evsRoles = await SSO.fetchEvsRoles(user.tag); // EVS Roles
-          var userdata = await SSO.fetchUser(uid, user.gid); // UserData
+          var roles = isUser[0].uid > 0 ? await SSO.fetchRoles(isUser[0].uid) : []; // Roles
+          const photo = `${req.protocol}://${req.get("host")}/api/photos/?tag=${encodeURIComponent(user.tag.toString().toLowerCase())}`;
+          var evsRoles = await SSO.fetchEvsRoles(user?.tag); // EVS Roles
+          var userdata = isUser[0].uid > 0 ? await SSO.fetchUser(isUser[0].uid, user?.gid) : [user]; // UserData
           userdata[0] = userdata
-            ? { ...userdata[0], user_group: user.gid, mail: email }
-            : null;
+          ? { 
+              ...userdata[0], 
+              user_group: user?.gid, 
+              mail: email
+            }
+          : null;
+
           var data = {
             roles: [...roles, ...evsRoles ],
             photo,
-            //user: userdata && userdata[0],
             user: { tag: userdata[0].tag, mail: userdata[0].mail, name: userdata[0].name, descriptor: userdata[0].designation, department: userdata[0].unitname, user_group: userdata[0].user_group },
           };
           // Generate Session Token

@@ -28,6 +28,12 @@ module.exports.SSO = {
     return res;
   },
 
+  verifyAux: async (tag) => {
+    var sql = "select 0 as uid,6 as group_name,6 as group_id,tag,name,phone as mail from ehub_vote.vote_auth where tag = ?"; // Affiliated UCC Voters - PTAs
+    var res =  await db.query(sql, [tag]);
+    if (res && res.length > 0) return res
+  },
+
   verifyUserByEmail: async ({ email }) => {
     const sql = "select u.* from ehub_identity.user u where u.username = ?";
     const res = await db.query(sql,[email]);
@@ -775,15 +781,27 @@ module.exports.SSO = {
       if (voters.length > 0 && voters.length != voters_data.length) {
         for (const tag of voters) {
           let sql;
-          if (group_id === 2)
+          if (group_id === 2){ // STAFF 
             sql = `select s.staff_no as tag,concat(s.fname,ifnull(concat(' ',s.mname),''),' ',s.lname) as name,s.ucc_mail as mail from hr.staff s where s.staff_no = ?`;
+            // AUXILARY STAFF DATA
+            const ms = await db.query(`select tag,name,phone as mail from ehub_vote.vote_auth where tag = ?`, [tag]);
+            if (ms && ms.length > 0){
+                const isExist = electors.find((r => r.tag == tag));
+                if(!isExist) electors.push(ms[0]);
+            } 
+          }
+          // STUDENT
           if (group_id === 1)
             sql = `select s.regno as tag,concat(s.fname,ifnull(concat(' ',s.mname),''),' ',s.lname) as name,s.inst_email as mail from osis.students_db s where s.regno = ?`;
+          // THIRD PARTY OR AUXILIARY
           if (group_id === 6)
             sql = `select tag,name,phone as mail,phone from ehub_vote.vote_auth where tag = ?`;
           
-            const ss = await db.query(sql, [tag]);
-          if (ss && ss.length > 0) electors.push(ss[0]);
+          const ss = await db.query(sql, [tag]);
+          if (ss && ss.length > 0){
+            const isExist = electors.find((r => r.tag == tag));
+            if(!isExist) electors.push(ss[0]);
+          } 
         }
         // Update Voters_whitedata
         await db.query(
